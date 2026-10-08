@@ -92,3 +92,38 @@ Contenido previsto: utilizar las definiciones semánticas como autoridad, no inv
 10. Iterar la capa semántica, no inflar el system prompt.
 9. Estado actual
 Este documento define la arquitectura inicial. Todavía no se han fijado las entidades, métricas ni reglas definitivas: esas decisiones se tomarán después de inspeccionar la copia local de Wanderbricks.
+
+countries
+   ├── hosts.country
+   ├── employees.country
+   └── users.country
+
+hosts
+   ├── properties.host_id
+   └── employees.host_id
+
+destinations
+   └── properties.destination_id
+
+properties
+   ├── bookings.property_id
+   ├── reviews.property_id
+   ├── property_images.property_id
+   ├── property_amenities.property_id
+   ├── page_views.property_id
+   └── clickstream.property_id
+
+amenities
+   └── property_amenities.amenity_id
+
+users
+   ├── bookings.user_id
+   ├── reviews.user_id
+   ├── page_views.user_id
+   ├── clickstream.user_id
+   └── customer_support_logs.user_id
+
+bookings
+   ├── booking_updates.booking_id
+   ├── payments.booking_id
+   └── reviews.booking_id

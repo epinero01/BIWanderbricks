@@ -1,0 +1,182 @@
+-- ============================================================
+-- WANDERBRICKS GOVERNANCE LAYER
+-- ============================================================
+-- Schema:
+--   wanderbricks_govern
+--
+-- Objetivo:
+--   - Business Glossary
+--   - Semantic Layer Metadata
+--   - Certified Metrics
+--   - Data Classification
+--   - Data Quality Rules
+--   - Business Views Catalog
+--   - AI Prompt Context
+--
+-- Relacionado con:
+--   wanderbricks            (datos origen)
+--   wanderbricks_semantic   (vistas de negocio)
+-- ============================================================
+
+CREATE SCHEMA IF NOT EXISTS wanderbricks_govern;
+
+-- ============================================================
+-- BUSINESS TERMS (Business Glossary)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS wanderbricks_govern.business_terms (
+    term_name STRING NOT NULL,
+    business_domain STRING,
+    business_definition STRING,
+    business_owner STRING,
+    data_steward STRING,
+    synonyms ARRAY<STRING>,
+    examples ARRAY<STRING>,
+    status STRING,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+
+    CONSTRAINT pk_business_terms
+    PRIMARY KEY (term_name)
+);
+
+-- ============================================================
+-- CERTIFIED METRICS
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS wanderbricks_govern.metrics (
+    metric_name STRING NOT NULL,
+    business_domain STRING,
+    business_definition STRING,
+    calculation_description STRING,
+    sql_expression STRING,
+    grain_level STRING,
+    source_view STRING,
+    business_owner STRING,
+    certified BOOLEAN,
+    status STRING,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+
+    CONSTRAINT pk_metrics
+    PRIMARY KEY (metric_name)
+);
+
+-- ============================================================
+-- BUSINESS ENTITIES
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS wanderbricks_govern.entities (
+    entity_name STRING NOT NULL,
+    business_domain STRING,
+    description STRING,
+    primary_table_name STRING,
+    semantic_view STRING,
+    owner STRING,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+
+    CONSTRAINT pk_entities
+    PRIMARY KEY (entity_name)
+);
+
+-- ============================================================
+-- COLUMN SEMANTICS
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS wanderbricks_govern.column_semantics (
+    schema_name STRING NOT NULL,
+    table_name STRING NOT NULL,
+    column_name STRING NOT NULL,
+
+    business_name STRING,
+    business_definition STRING,
+
+    pii_flag BOOLEAN,
+    sensitive_flag BOOLEAN,
+    financial_flag BOOLEAN,
+
+    business_domain STRING,
+
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+
+    CONSTRAINT pk_column_semantics
+    PRIMARY KEY (
+        schema_name,
+        table_name,
+        column_name
+    )
+);
+
+-- ============================================================
+-- DATA CLASSIFICATION
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS wanderbricks_govern.data_classification (
+    object_type STRING,
+    schema_name STRING,
+    table_name STRING,
+    column_name STRING,
+
+    classification STRING,
+    justification STRING,
+
+    owner STRING,
+
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
+
+-- ============================================================
+-- DATA QUALITY RULES
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS wanderbricks_govern.data_quality_rules (
+    rule_id BIGINT GENERATED ALWAYS AS IDENTITY,
+
+    schema_name STRING,
+    table_name STRING,
+    column_name STRING,
+
+    rule_name STRING,
+    rule_description STRING,
+
+    rule_type STRING,
+
+    rule_expression STRING,
+
+    severity STRING,
+
+    active BOOLEAN,
+
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+
+    CONSTRAINT pk_data_quality_rules
+    PRIMARY KEY (rule_id)
+);
+
+-- ============================================================
+-- ENTITY RELATIONSHIPS
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS wanderbricks_govern.entity_relationships (
+    parent_entity STRING,
+    child_entity STRING,
+
+    relationship_name STRING,
+
+    cardinality STRING,
+
+    description STRING,
+
+    CONSTRAINT pk_entity_relationships
+    PRIMARY KEY (
+        parent_entity,
+        child_entity,
+        relationship_name
+    )
+);
+
+-- =======================

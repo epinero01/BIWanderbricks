@@ -1,0 +1,491 @@
+-- ============================================================
+-- WANDERBRICKS GOVERNANCE LAYER
+-- PHASE 1 POPULATION
+-- Based exclusively on:
+--   - Wanderbricks Semantic Contract v0.1
+--   - wanderbricks_semantic schema
+--
+-- Goal:
+-- Populate governance metadata without inventing
+-- unsupported business definitions.
+-- ============================================================
+
+
+-- ============================================================
+-- ENTITIES
+-- ============================================================
+
+INSERT INTO wanderbricks_govern.entities
+(
+    entity_name,
+    business_domain,
+    description,
+    primary_table_name,
+    semantic_view,
+    owner,
+    created_at
+)
+VALUES
+
+(
+    'Country',
+    'Geography',
+    'Reference country.',
+    'countries',
+    'dim_country',
+    'Data Office',
+    current_timestamp()
+),
+
+(
+    'Destination',
+    'Geography',
+    'Travel destination associated with properties.',
+    'destinations',
+    'dim_destination',
+    'Data Office',
+    current_timestamp()
+),
+
+(
+    'Host',
+    'Property Management',
+    'Property owner or manager.',
+    'hosts',
+    'dim_host',
+    'Data Office',
+    current_timestamp()
+),
+
+(
+    'Employee',
+    'Property Management',
+    'Employee working for a host.',
+    'employees',
+    'dim_employee',
+    'Data Office',
+    current_timestamp()
+),
+
+(
+    'Property',
+    'Property Management',
+    'Property available for booking.',
+    'properties',
+    'dim_property',
+    'Data Office',
+    current_timestamp()
+),
+
+(
+    'Amenity',
+    'Property Management',
+    'Property feature or service.',
+    'amenities',
+    'dim_amenity',
+    'Data Office',
+    current_timestamp()
+),
+
+(
+    'Customer',
+    'Customer',
+    'User registered in the Wanderbricks platform.',
+    'users',
+    'dim_user',
+    'Data Office',
+    current_timestamp()
+),
+
+(
+    'Booking',
+    'Bookings',
+    'Reservation transaction.',
+    'bookings',
+    'fact_booking',
+    'Data Office',
+    current_timestamp()
+),
+
+(
+    'Booking Update',
+    'Bookings',
+    'Historical update associated with a booking.',
+    'booking_updates',
+    'fact_booking_update',
+    'Data Office',
+    current_timestamp()
+),
+
+(
+    'Payment Movement',
+    'Payments',
+    'Monetary movement associated with a booking.',
+    'payments',
+    'fact_payment',
+    'Data Office',
+    current_timestamp()
+),
+
+(
+    'Review Record',
+    'Reviews',
+    'Review row preserved at source grain.',
+    'reviews',
+    'fact_review',
+    'Data Office',
+    current_timestamp()
+),
+
+(
+    'Page View Event',
+    'Digital Engagement',
+    'Property page interaction event.',
+    'page_views',
+    'fact_page_view',
+    'Data Office',
+    current_timestamp()
+),
+
+(
+    'Clickstream Event',
+    'Digital Engagement',
+    'Website interaction event.',
+    'clickstream',
+    'fact_clickstream',
+    'Data Office',
+    current_timestamp()
+),
+
+(
+    'Support Ticket',
+    'Customer Support',
+    'Customer support ticket.',
+    'customer_support_logs',
+    'fact_support_ticket',
+    'Data Office',
+    current_timestamp()
+);
+
+
+-- ============================================================
+-- ENTITY RELATIONSHIPS
+-- ============================================================
+
+INSERT INTO wanderbricks_govern.entity_relationships
+(
+    parent_entity,
+    child_entity,
+    relationship_name,
+    cardinality,
+    description
+)
+VALUES
+
+(
+    'Country',
+    'Destination',
+    'contains',
+    '1:N',
+    'One country can contain multiple destinations.'
+),
+
+(
+    'Destination',
+    'Property',
+    'contains',
+    '1:N',
+    'One destination can contain multiple properties.'
+),
+
+(
+    'Host',
+    'Property',
+    'owns',
+    '1:N',
+    'One host can manage multiple properties.'
+),
+
+(
+    'Host',
+    'Employee',
+    'employs',
+    '1:N',
+    'One host can employ multiple employees.'
+),
+
+(
+    'Property',
+    'Booking',
+    'receives_booking',
+    '1:N',
+    'One property can receive multiple bookings.'
+),
+
+(
+    'Property',
+    'Review Record',
+    'receives_review',
+    '1:N',
+    'One property can receive multiple reviews.'
+),
+
+(
+    'Property',
+    'Page View Event',
+    'receives_page_views',
+    '1:N',
+    'One property can receive multiple page view events.'
+),
+
+(
+    'Property',
+    'Clickstream Event',
+    'receives_clickstream_events',
+    '1:N',
+    'One property can receive multiple clickstream events.'
+),
+
+(
+    'Customer',
+    'Booking',
+    'creates_booking',
+    '1:N',
+    'One customer can create multiple bookings.'
+),
+
+(
+    'Customer',
+    'Review Record',
+    'creates_review',
+    '1:N',
+    'One customer can create multiple reviews.'
+),
+
+(
+    'Customer',
+    'Support Ticket',
+    'opens_ticket',
+    '1:N',
+    'One customer can open multiple support tickets.'
+),
+
+(
+    'Booking',
+    'Booking Update',
+    'has_update',
+    '1:N',
+    'One booking can have multiple updates.'
+),
+
+(
+    'Booking',
+    'Payment Movement',
+    'has_payment_movement',
+    '1:N',
+    'One booking can have multiple payment movements.'
+);
+
+
+-- ============================================================
+-- BUSINESS VIEWS
+-- ============================================================
+
+INSERT INTO wanderbricks_govern.business_views
+(
+    view_name,
+    schema_name,
+    business_domain,
+    description,
+    primary_entity,
+    owner,
+    certified,
+    created_at
+)
+VALUES
+
+(
+    'dim_country',
+    'wanderbricks_semantic',
+    'Geography',
+    'Country dimension.',
+    'Country',
+    'Data Office',
+    true,
+    current_timestamp()
+),
+
+(
+    'dim_destination',
+    'wanderbricks_semantic',
+    'Geography',
+    'Destination dimension.',
+    'Destination',
+    'Data Office',
+    true,
+    current_timestamp()
+),
+
+(
+    'dim_host',
+    'wanderbricks_semantic',
+    'Property Management',
+    'Host dimension.',
+    'Host',
+    'Data Office',
+    true,
+    current_timestamp()
+),
+
+(
+    'dim_employee',
+    'wanderbricks_semantic',
+    'Property Management',
+    'Employee dimension.',
+    'Employee',
+    'Data Office',
+    true,
+    current_timestamp()
+),
+
+(
+    'dim_property',
+    'wanderbricks_semantic',
+    'Property Management',
+    'Property dimension.',
+    'Property',
+    'Data Office',
+    true,
+    current_timestamp()
+),
+
+(
+    'dim_amenity',
+    'wanderbricks_semantic',
+    'Property Management',
+    'Amenity dimension.',
+    'Amenity',
+    'Data Office',
+    true,
+    current_timestamp()
+),
+
+(
+    'dim_user',
+    'wanderbricks_semantic',
+    'Customer',
+    'Customer dimension.',
+    'Customer',
+    'Data Office',
+    false,
+    current_timestamp()
+),
+
+(
+    'bridge_property_amenity',
+    'wanderbricks_semantic',
+    'Property Management',
+    'Property-amenity bridge table.',
+    'Property',
+    'Data Office',
+    true,
+    current_timestamp()
+),
+
+(
+    'fact_booking',
+    'wanderbricks_semantic',
+    'Bookings',
+    'Booking fact table.',
+    'Booking',
+    'Data Office',
+    true,
+    current_timestamp()
+),
+
+(
+    'fact_booking_update',
+    'wanderbricks_semantic',
+    'Bookings',
+    'Booking update fact table.',
+    'Booking Update',
+    'Data Office',
+    true,
+    current_timestamp()
+),
+
+(
+    'fact_payment',
+    'wanderbricks_semantic',
+    'Payments',
+    'Payment movement fact table.',
+    'Payment Movement',
+    'Data Office',
+    false,
+    current_timestamp()
+),
+
+(
+    'fact_review',
+    'wanderbricks_semantic',
+    'Reviews',
+    'Review fact table.',
+    'Review Record',
+    'Data Office',
+    false,
+    current_timestamp()
+),
+
+(
+    'fact_page_view',
+    'wanderbricks_semantic',
+    'Digital Engagement',
+    'Page view fact table.',
+    'Page View Event',
+    'Data Office',
+    false,
+    current_timestamp()
+),
+
+(
+    'fact_clickstream',
+    'wanderbricks_semantic',
+    'Digital Engagement',
+    'Clickstream fact table.',
+    'Clickstream Event',
+    'Data Office',
+    true,
+    current_timestamp()
+),
+
+(
+    'fact_support_ticket',
+    'wanderbricks_semantic',
+    'Customer Support',
+    'Support ticket fact table.',
+    'Support Ticket',
+    'Data Office',
+    true,
+    current_timestamp()
+),
+
+(
+    'fact_property_image',
+    'wanderbricks_semantic',
+    'Property Management',
+    'Property image fact table.',
+    'Property',
+    'Data Office',
+    false,
+    current_timestamp()
+);
+
+
+-- ============================================================
+-- BUSINESS RULES
+-- ============================================================
+
+INSERT INTO wanderbricks_govern.business_rules
+(
+    rule_name,
+    business

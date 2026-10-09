@@ -251,3 +251,123 @@ CREATE TABLE IF NOT EXISTS wanderbricks_govern.kpi_catalog (
     CONSTRAINT pk_kpi_catalog
     PRIMARY KEY (kpi_name)
 );
+-- ============================================================
+-- BUSINESS VIEWS
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS wanderbricks_govern.business_views (
+    view_name STRING NOT NULL,
+
+    schema_name STRING,
+
+    business_domain STRING,
+
+    description STRING,
+
+    primary_entity STRING,
+
+    source_tables ARRAY<STRING>,
+
+    certification_status STRING,
+
+    owner STRING,
+
+    certified BOOLEAN,
+
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+
+    CONSTRAINT pk_business_views
+    PRIMARY KEY (view_name)
+);
+
+-- ============================================================
+-- BUSINESS RULES
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS wanderbricks_govern.business_rules (
+    rule_name STRING NOT NULL,
+
+    business_domain STRING,
+
+    rule_description STRING,
+
+    applies_to_entity STRING,
+
+    severity STRING,
+
+    active BOOLEAN,
+
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+
+    CONSTRAINT pk_business_rules
+    PRIMARY KEY (rule_name)
+);
+
+-- ============================================================
+-- METRIC DEPENDENCIES
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS wanderbricks_govern.metric_dependencies (
+    metric_name STRING NOT NULL,
+
+    dependency_type STRING,
+
+    dependency_name STRING,
+
+    role_description STRING,
+
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
+
+-- ============================================================
+-- KPI CATALOG
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS wanderbricks_govern.kpi_catalog (
+    kpi_name STRING NOT NULL,
+
+    business_domain STRING,
+
+    business_definition STRING,
+
+    business_question STRING,
+
+    interpretation STRING,
+
+    target_value STRING,
+
+    metric_name STRING,
+
+    dashboard_name STRING,
+
+    certification_status STRING,
+
+    certified BOOLEAN,
+
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+
+    CONSTRAINT pk_kpi_catalog
+    PRIMARY KEY (kpi_name)
+);
+
+-- ============================================================
+-- OPTIONAL: KPI CERTIFICATION LEVELS
+-- ============================================================
+--
+-- Recommended values:
+--
+-- CERTIFIED
+-- CONDITIONAL
+-- UNSUPPORTED
+--
+-- Following the Semantic Contract KPI readiness framework:
+--
+-- 🟢 CERTIFIED
+-- 🟡 CONDITIONAL
+-- 🔴 UNSUPPORTED
+--
+-- ============================================================

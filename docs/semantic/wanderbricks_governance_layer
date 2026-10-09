@@ -180,3 +180,22 @@ CREATE TABLE IF NOT EXISTS wanderbricks_govern.entity_relationships (
 );
 
 -- =======================
+-- ============================================================
+-- METRIC DEPENDENCIES
+-- ============================================================
+-- Documenta el linaje funcional de las métricas
+-- independientemente del SQL físico.
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS wanderbricks_govern.metric_dependencies (
+    metric_name STRING NOT NULL,
+
+    dependency_type STRING,
+
+    dependency_name STRING,
+
+    role_description STRING,
+
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);

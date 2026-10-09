@@ -199,3 +199,55 @@ CREATE TABLE IF NOT EXISTS wanderbricks_govern.metric_dependencies (
     created_at TIMESTAMP,
     updated_at TIMESTAMP
 );
+-- ============================================================
+-- BUSINESS RULES
+-- ============================================================
+-- Reglas funcionales del negocio
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS wanderbricks_govern.business_rules (
+    rule_name STRING NOT NULL,
+    business_domain STRING,
+
+    rule_description STRING,
+
+    applies_to_entity STRING,
+
+    severity STRING,
+
+    active BOOLEAN,
+
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+
+    CONSTRAINT pk_business_rules
+    PRIMARY KEY (rule_name)
+);-- ============================================================
+-- KPI CATALOG
+-- ============================================================
+-- Catálogo funcional orientado a dashboard/GenAI
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS wanderbricks_govern.kpi_catalog (
+    kpi_name STRING NOT NULL,
+
+    business_domain STRING,
+
+    business_question STRING,
+
+    interpretation STRING,
+
+    target_value STRING,
+
+    metric_name STRING,
+
+    dashboard_name STRING,
+
+    certified BOOLEAN,
+
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+
+    CONSTRAINT pk_kpi_catalog
+    PRIMARY KEY (kpi_name)
+);

@@ -488,4 +488,1913 @@ VALUES
 INSERT INTO wanderbricks_govern.business_rules
 (
     rule_name,
-    business
+    business_domain,
+    rule_description,
+    applies_to_entity,
+    severity,
+    active,
+    created_at
+)
+VALUES
+
+(
+    'ValidateDeclaredPrimaryKeys',
+    'Governance',
+    'Declared primary keys must be validated against actual data.',
+    'All',
+    'HIGH',
+    true,
+    current_timestamp()
+),
+
+(
+    'PaymentIdNotUnique',
+    'Payments',
+    'payment_id must not be treated as a reliable unique payment identifier.',
+    'Payment Movement',
+    'HIGH',
+    true,
+    current_timestamp()
+),
+
+(
+    'ReviewIdNotUnique',
+    'Reviews',
+    'review_id must not be used for review counting.',
+    'Review Record',
+    'HIGH',
+    true,
+    current_timestamp()
+),
+
+(
+    'ViewIdNotUnique',
+    'Digital Engagement',
+    'view_id must not be treated as a unique event identifier.',
+    'Page View Event',
+    'HIGH',
+    true,
+    current_timestamp()
+),
+
+(
+    'BookingDateUsesCreatedAt',
+    'Bookings',
+    'Booking Date refers to bookings.created_at.',
+    'Booking',
+    'HIGH',
+    true,
+    current_timestamp()
+),
+
+(
+    'PreserveBookingTemporalConcepts',
+    'Bookings',
+    'created_at, check_in and check_out represent different business concepts and must not be treated as interchangeable.',
+    'Booking',
+    'HIGH',
+    true,
+    current_timestamp()
+),
+
+(
+    'SeparateClickstreamAndPageViews',
+    'Digital Engagement',
+    'clickstream and page_views are independent event sources and must not be automatically merged.',
+    'Digital Engagement',
+    'HIGH',
+    true,
+    current_timestamp()
+),
+
+(
+    'RevenueNotCertified',
+    'Finance',
+    'Revenue is not currently certified and requires an explicit business definition.',
+    'Payment Movement',
+    'HIGH',
+    true,
+    current_timestamp()
+),
+
+(
+    'AverageRatingRequiresPolicy',
+    'Reviews',
+    'Average Rating requires an explicit policy regarding deleted reviews and null ratings.',
+    'Review Record',
+    'MEDIUM',
+    true,
+    current_timestamp()
+),
+
+(
+    'ReviewCountRequiresRowGrain',
+    'Reviews',
+    'Review Count must use row grain and not COUNT(DISTINCT review_id).',
+    'Review Record',
+    'HIGH',
+    true,
+    current_timestamp()
+),
+
+(
+    'OccupancyUnsupported',
+    'Bookings',
+    'Occupancy cannot currently be calculated reliably from the available dataset.',
+    'Property',
+    'HIGH',
+    true,
+    current_timestamp()
+);
+
+
+-- ============================================================
+-- DATA QUALITY RULES
+-- ============================================================
+
+INSERT INTO wanderbricks_govern.data_quality_rules
+(
+    schema_name,
+    table_name,
+    column_name,
+    rule_name,
+    rule_description,
+    rule_type,
+    rule_expression,
+    severity,
+    active,
+    created_at
+)
+VALUES
+
+(
+    'wanderbricks_semantic',
+    'fact_booking',
+    'check_out',
+    'BookingCheckOutAfterCheckIn',
+    'All bookings must have check_out after check_in.',
+    'VALIDITY',
+    'check_out > check_in',
+    'HIGH',
+    true,
+    current_timestamp()
+),
+
+(
+    'wanderbricks_semantic',
+    'dim_employee',
+    'end_service_date',
+    'EmployeeLifecycleConsistency',
+    'Inactive employees must have a populated end_service_date.',
+    'BUSINESS_RULE',
+    'is_currently_employed = false => end_service_date IS NOT NULL',
+    'HIGH',
+    true,
+    current_timestamp()
+),
+
+(
+    'wanderbricks_semantic',
+    'bridge_property_amenity',
+    NULL,
+    'PropertyAmenityCompositeUnique',
+    'Composite key property_id + amenity_id must be unique.',
+    'UNIQUENESS',
+    '(property_id, amenity_id)',
+    'HIGH',
+    true,
+    current_timestamp()
+),
+
+(
+    'wanderbricks_semantic',
+    'dim_destination',
+    'country',
+    'DestinationCountryIntegrity',
+    'All destinations must reference a valid country.',
+    'REFERENTIAL_INTEGRITY',
+    'country exists in dim_country',
+    'HIGH',
+    true,
+    current_timestamp()
+),
+
+(
+    'wanderbricks_semantic',
+    'fact_payment',
+    'payment_id',
+    'PaymentIdNotReliable',
+    'payment_id presents duplicates and must not be used as a business key.',
+    'SEMANTIC_WARNING',
+    'payment_id is not unique',
+    'HIGH',
+    true,
+    current_timestamp()
+),
+
+(
+    'wanderbricks_semantic',
+    'fact_review',
+    'review_id',
+    'ReviewIdNotReliable',
+    'review_id presents duplicates and must not be used as a business key.',
+    'SEMANTIC_WARNING',
+    'review_id is not unique',
+    'HIGH',
+    true,
+    current_timestamp()
+),
+
+(
+    'wanderbricks_semantic',
+    'fact_page_view',
+    'view_id',
+    'ViewIdNotReliable',
+    'view_id presents duplicates and must not be used as a business key.',
+    'SEMANTIC_WARNING',
+    'view_id is not unique',
+    'HIGH',
+    true,
+    current_timestamp()
+);
+
+INSERT INTO wanderbricks_govern.kpi_catalog
+(
+    kpi_name,
+    business_domain,
+    business_definition,
+    metric_name,
+    certification_status,
+    certified,
+    created_at
+)
+VALUES
+
+(
+    'Total Properties',
+    'Property Management',
+    'Number of properties in the platform.',
+    'Total Properties',
+    'CERTIFIED',
+    true,
+    current_timestamp()
+),
+
+(
+    'Total Hosts',
+    'Property Management',
+    'Number of hosts.',
+    'Total Hosts',
+    'CERTIFIED',
+    true,
+    current_timestamp()
+),
+
+(
+    'Total Bookings',
+    'Bookings',
+    'Number of bookings.',
+    'Total Bookings',
+    'CERTIFIED',
+    true,
+    current_timestamp()
+),
+
+(
+    'Completed Bookings',
+    'Bookings',
+    'Bookings with status = completed.',
+    'Completed Bookings',
+    'CERTIFIED',
+    true,
+    current_timestamp()
+),
+
+(
+    'Cancelled Bookings',
+    'Bookings',
+    'Bookings with status = cancelled.',
+    'Cancelled Bookings',
+    'CERTIFIED',
+    true,
+    current_timestamp()
+),
+
+(
+    'Stay Duration',
+    'Bookings',
+    'Number of nights between check-in and check-out.',
+    'Stay Duration',
+    'CERTIFIED',
+    true,
+    current_timestamp()
+),
+
+(
+    'Average Stay Duration',
+    'Bookings',
+    'Average stay duration.',
+    'Average Stay Duration',
+    'CERTIFIED',
+    true,
+    current_timestamp()
+),
+
+(
+    'Properties per Destination',
+    'Property Management',
+    'Number of properties by destination.',
+    'Properties per Destination',
+    'CERTIFIED',
+    true,
+    current_timestamp()
+),
+
+(
+    'Amenities per Property',
+    'Property Management',
+    'Number of amenities associated with a property.',
+    'Amenities per Property',
+    'CERTIFIED',
+    true,
+    current_timestamp()
+),
+
+(
+    'Completed Payment Volume',
+    'Finance',
+    'Volume of completed monetary movements.',
+    'Completed Payment Volume',
+    'CERTIFIED',
+    true,
+    current_timestamp()
+),
+
+(
+    'Refund Volume',
+    'Finance',
+    'Volume of refunded monetary movements.',
+    'Refund Volume',
+    'CERTIFIED',
+    true,
+    current_timestamp()
+),
+
+(
+    'Net Payment Movement',
+    'Finance',
+    'Net movement after summing all payment records.',
+    'Net Payment Movement',
+    'CERTIFIED',
+    true,
+    current_timestamp()
+),
+
+(
+    'Average Rating',
+    'Customer Experience',
+    'Average rating. Requires deleted/null handling policy.',
+    'Average Rating',
+    'CONDITIONAL',
+    false,
+    current_timestamp()
+),
+
+(
+    'Review Count',
+    'Customer Experience',
+    'Review count using row grain.',
+    'Review Count',
+    'CONDITIONAL',
+    false,
+    current_timestamp()
+),
+
+(
+    'Revenue',
+    'Finance',
+    'Business definition not yet agreed.',
+    'Revenue',
+    'CONDITIONAL',
+    false,
+    current_timestamp()
+),
+
+(
+    'Cancellation Rate',
+    'Bookings',
+    'Requires denominator definition.',
+    'Cancellation Rate',
+    'CONDITIONAL',
+    false,
+    current_timestamp()
+),
+
+(
+    'Conversion Rate',
+    'Digital Engagement',
+    'Requires attribution and funnel definition.',
+    'Conversion Rate',
+    'CONDITIONAL',
+    false,
+    current_timestamp()
+),
+
+(
+    'Repeat Customer Rate',
+    'Customer',
+    'Requires customer definition.',
+    'Repeat Customer Rate',
+    'CONDITIONAL',
+    false,
+    current_timestamp()
+),
+
+(
+    'Customer Lifetime Value',
+    'Customer',
+    'Requires lifecycle and revenue definitions.',
+    'Customer Lifetime Value',
+    'CONDITIONAL',
+    false,
+    current_timestamp()
+),
+
+(
+    'Occupancy',
+    'Property Management',
+    'Cannot be reliably calculated from current dataset.',
+    'Occupancy',
+    'UNSUPPORTED',
+    false,
+    current_timestamp()
+);
+
+INSERT INTO wanderbricks_govern.metrics
+(
+    metric_name,
+    business_domain,
+    business_definition,
+    calculation_description,
+    sql_expression,
+    grain_level,
+    source_view,
+    business_owner,
+    certified,
+    status,
+    created_at
+)
+VALUES
+
+(
+    'Total Properties',
+    'Property Management',
+    'Number of properties.',
+    'Count distinct properties.',
+    'COUNT(DISTINCT property_id)',
+    'Property',
+    'dim_property',
+    'Business',
+    true,
+    'CERTIFIED',
+    current_timestamp()
+),
+
+(
+    'Total Hosts',
+    'Property Management',
+    'Number of hosts.',
+    'Count distinct hosts.',
+    'COUNT(DISTINCT host_id)',
+    'Host',
+    'dim_host',
+    'Business',
+    true,
+    'CERTIFIED',
+    current_timestamp()
+),
+
+(
+    'Total Bookings',
+    'Bookings',
+    'Number of bookings.',
+    'Count distinct bookings.',
+    'COUNT(DISTINCT booking_id)',
+    'Booking',
+    'fact_booking',
+    'Business',
+    true,
+    'CERTIFIED',
+    current_timestamp()
+),
+
+(
+    'Completed Bookings',
+    'Bookings',
+    'Bookings with status completed.',
+    'Count bookings where status=completed.',
+    'COUNT(DISTINCT booking_id) WHERE status = ''completed''',
+    'Booking',
+    'fact_booking',
+    'Business',
+    true,
+    'CERTIFIED',
+    current_timestamp()
+),
+
+(
+    'Cancelled Bookings',
+    'Bookings',
+    'Bookings with status cancelled.',
+    'Count bookings where status=cancelled.',
+    'COUNT(DISTINCT booking_id) WHERE status = ''cancelled''',
+    'Booking',
+    'fact_booking',
+    'Business',
+    true,
+    'CERTIFIED',
+    current_timestamp()
+),
+
+(
+    'Stay Duration',
+    'Bookings',
+    'Length of stay in nights.',
+    'DATEDIFF(check_out, check_in)',
+    'DATEDIFF(check_out, check_in)',
+    'Booking',
+    'fact_booking',
+    'Business',
+    true,
+    'CERTIFIED',
+    current_timestamp()
+),
+
+(
+    'Average Stay Duration',
+    'Bookings',
+    'Average stay in nights.',
+    'AVG(stay_nights)',
+    'AVG(stay_nights)',
+    'Booking',
+    'fact_booking',
+    'Business',
+    true,
+    'CERTIFIED',
+    current_timestamp()
+),
+
+(
+    'Completed Payment Volume',
+    'Finance',
+    'Completed monetary movements.',
+    'Sum amount where status=completed.',
+    'SUM(amount) WHERE status = ''completed''',
+    'Payment Movement',
+    'fact_payment',
+    'Finance',
+    true,
+    'CERTIFIED',
+    current_timestamp()
+),
+
+(
+    'Refund Volume',
+    'Finance',
+    'Refunded monetary movements.',
+    'SUM(ABS(amount)) where status=refunded.',
+    'SUM(ABS(amount)) WHERE status = ''refunded''',
+    'Payment Movement',
+    'fact_payment',
+    'Finance',
+    true,
+    'CERTIFIED',
+    current_timestamp()
+),
+
+(
+    'Net Payment Movement',
+    'Finance',
+    'Net movement of all payments.',
+    'SUM(amount)',
+    'SUM(amount)',
+    'Payment Movement',
+    'fact_payment',
+    'Finance',
+    true,
+    'CERTIFIED',
+    current_timestamp()
+);
+
+INSERT INTO wanderbricks_govern.metric_dependencies
+(
+    metric_name,
+    dependency_type,
+    dependency_name,
+    role_description,
+    created_at
+)
+VALUES
+
+(
+    'Total Properties',
+    'VIEW',
+    'dim_property',
+    'Source entity.',
+    current_timestamp()
+),
+
+(
+    'Total Hosts',
+    'VIEW',
+    'dim_host',
+    'Source entity.',
+    current_timestamp()
+),
+
+(
+    'Total Bookings',
+    'VIEW',
+    'fact_booking',
+    'Booking fact source.',
+    current_timestamp()
+),
+
+(
+    'Completed Bookings',
+    'COLUMN',
+    'fact_booking.status',
+    'Filters completed bookings.',
+    current_timestamp()
+),
+
+(
+    'Cancelled Bookings',
+    'COLUMN',
+    'fact_booking.status',
+    'Filters cancelled bookings.',
+    current_timestamp()
+),
+
+(
+    'Stay Duration',
+    'COLUMN',
+    'fact_booking.check_in',
+    'Stay start date.',
+    current_timestamp()
+),
+
+(
+    'Stay Duration',
+    'COLUMN',
+    'fact_booking.check_out',
+    'Stay end date.',
+    current_timestamp()
+),
+
+(
+    'Completed Payment Volume',
+    'COLUMN',
+    'fact_payment.amount',
+    'Payment amount.',
+    current_timestamp()
+),
+
+(
+    'Completed Payment Volume',
+    'COLUMN',
+    'fact_payment.status',
+    'Completed payment filter.',
+    current_timestamp()
+),
+
+(
+    'Refund Volume',
+    'COLUMN',
+    'fact_payment.amount',
+    'Refund amount.',
+    current_timestamp()
+),
+
+(
+    'Refund Volume',
+    'COLUMN',
+    'fact_payment.status',
+    'Refund filter.',
+    current_timestamp()
+),
+
+(
+    'Net Payment Movement',
+    'COLUMN',
+    'fact_payment.amount',
+    'Net movement calculation.',
+    current_timestamp()
+);
+
+INSERT INTO wanderbricks_govern.data_classification
+(
+    object_type,
+    schema_name,
+    table_name,
+    column_name,
+    classification,
+    justification,
+    owner,
+    created_at
+)
+VALUES
+
+-- PII
+
+('COLUMN','wanderbricks_semantic','dim_user','name',
+ 'PII','Personal name.','Data Office',current_timestamp()),
+
+('COLUMN','wanderbricks_semantic','dim_user','email',
+ 'PII','Personal email.','Data Office',current_timestamp()),
+
+('COLUMN','wanderbricks_semantic','dim_host','name',
+ 'PII','Personal name.','Data Office',current_timestamp()),
+
+('COLUMN','wanderbricks_semantic','dim_host','email',
+ 'PII','Personal email.','Data Office',current_timestamp()),
+
+('COLUMN','wanderbricks_semantic','dim_host','phone',
+ 'PII','Personal phone number.','Data Office',current_timestamp()),
+
+('COLUMN','wanderbricks_semantic','dim_employee','name',
+ 'PII','Personal name.','Data Office',current_timestamp()),
+
+('COLUMN','wanderbricks_semantic','dim_employee','email',
+ 'PII','Personal email.','Data Office',current_timestamp()),
+
+('COLUMN','wanderbricks_semantic','dim_employee','phone',
+ 'PII','Personal phone number.','Data Office',current_timestamp()),
+
+-- Sensitive
+
+('COLUMN','wanderbricks_semantic','fact_review','comment',
+ 'SENSITIVE','Free text customer content.','Data Office',current_timestamp()),
+
+('COLUMN','wanderbricks_semantic','fact_support_ticket','messages',
+ 'SENSITIVE','Customer support conversation.','Data Office',current_timestamp()),
+
+-- Financial
+
+('COLUMN','wanderbricks_semantic','fact_payment','amount',
+ 'FINANCIAL','Financial movement amount.','Data Office',current_timestamp()),
+
+('COLUMN','wanderbricks_semantic','fact_booking','total_amount',
+ 'FINANCIAL','Booking monetary amount.','Data Office',current_timestamp()),
+
+-- Internal
+
+('TABLE','wanderbricks_semantic','fact_payment',NULL,
+ 'INTERNAL','Transactional data.','Data Office',current_timestamp()),
+
+('TABLE','wanderbricks_semantic','fact_booking',NULL,
+ 'INTERNAL','Transactional data.','Data Office',current_timestamp()),
+
+('TABLE','wanderbricks_semantic','fact_review',NULL,
+ 'INTERNAL','Customer-generated content.','Data Office',current_timestamp());
+INSERT INTO wanderbricks_govern.business_terms
+(
+    term_name,
+    business_domain,
+    business_definition,
+    business_owner,
+    synonyms,
+    status,
+    created_at
+)
+VALUES
+
+(
+    'Property',
+    'Property Management',
+    'Accommodation available for booking in the Wanderbricks platform.',
+    'Business',
+    array('Listing','Accommodation'),
+    'ACTIVE',
+    current_timestamp()
+),
+
+(
+    'Host',
+    'Property Management',
+    'Property owner or manager responsible for one or more properties.',
+    'Business',
+    array('Owner'),
+    'ACTIVE',
+    current_timestamp()
+),
+
+(
+    'Destination',
+    'Geography',
+    'Travel destination associated with one or more properties.',
+    'Business',
+    array('Location'),
+    'ACTIVE',
+    current_timestamp()
+),
+
+(
+    'Customer',
+    'Customer',
+    'Registered platform user.',
+    'Business',
+    array('User','Guest'),
+    'ACTIVE',
+    current_timestamp()
+),
+
+(
+    'Booking',
+    'Bookings',
+    'Reservation made by a customer for a property.',
+    'Business',
+    array('Reservation'),
+    'ACTIVE',
+    current_timestamp()
+),
+
+(
+    'Booking Update',
+    'Bookings',
+    'Historical update associated with a booking.',
+    'Business',
+    array('Booking Change'),
+    'ACTIVE',
+    current_timestamp()
+),
+
+(
+    'Payment Movement',
+    'Finance',
+    'Monetary movement associated with a booking. It must not automatically be interpreted as revenue.',
+    'Finance',
+    array('Transaction'),
+    'ACTIVE',
+    current_timestamp()
+),
+
+(
+    'Review Record',
+    'Customer Experience',
+    'Review row stored in the source system.',
+    'Business',
+    array('Review'),
+    'ACTIVE',
+    current_timestamp()
+),
+
+(
+    'Page View Event',
+    'Digital Engagement',
+    'Property-page interaction event recorded in page_views.',
+    'Digital',
+    array('Page View'),
+    'ACTIVE',
+    current_timestamp()
+),
+
+(
+    'Clickstream Event',
+    'Digital Engagement',
+    'Website interaction event recorded in clickstream.',
+    'Digital',
+    array('Web Event'),
+    'ACTIVE',
+    current_timestamp()
+),
+
+(
+    'Support Ticket',
+    'Customer Support',
+    'Customer support interaction.',
+    'Support',
+    array('Incident','Case'),
+    'ACTIVE',
+    current_timestamp()
+),
+
+(
+    'Stay Duration',
+    'Bookings',
+    'Number of nights between check-in and check-out.',
+    'Business',
+    array('Length of Stay'),
+    'ACTIVE',
+    current_timestamp()
+),
+
+(
+    'Completed Payment Volume',
+    'Finance',
+    'Sum of payment movements with status = completed.',
+    'Finance',
+    array('Completed Payments'),
+    'ACTIVE',
+    current_timestamp()
+),
+
+(
+    'Refund Volume',
+    'Finance',
+    'Sum of refunded payment movements.',
+    'Finance',
+    array('Refunded Amount'),
+    'ACTIVE',
+    current_timestamp()
+),
+
+(
+    'Net Payment Movement',
+    'Finance',
+    'Net monetary movement calculated as the sum of all payment amounts.',
+    'Finance',
+    array('Net Movement'),
+    'ACTIVE',
+    current_timestamp()
+),
+
+(
+    'Revenue',
+    'Finance',
+    'Business definition not yet certified. Do not assume Revenue equals booking amount or payment amount.',
+    'Finance',
+    array('Sales','Income'),
+    'CONDITIONAL',
+    current_timestamp()
+);
+
+INSERT INTO wanderbricks_govern.column_semantics
+(
+    schema_name,
+    table_name,
+    column_name,
+    business_name,
+    business_definition,
+    business_domain,
+    created_at
+)
+VALUES
+
+(
+    'wanderbricks_semantic',
+    'fact_booking',
+    'booking_id',
+    'Booking Identifier',
+    'Reliable booking identifier. One row represents one booking.',
+    'Bookings',
+    current_timestamp()
+),
+
+(
+    'wanderbricks_semantic',
+    'fact_booking',
+    'created_at',
+    'Booking Date',
+    'Booking creation date. Must not be confused with check-in or check-out.',
+    'Bookings',
+    current_timestamp()
+),
+
+(
+    'wanderbricks_semantic',
+    'fact_booking',
+    'check_in',
+    'Arrival Date',
+    'Beginning of the stay.',
+    'Bookings',
+    current_timestamp()
+),
+
+(
+    'wanderbricks_semantic',
+    'fact_booking',
+    'check_out',
+    'Departure Date',
+    'End of the stay.',
+    'Bookings',
+    current_timestamp()
+),
+
+(
+    'wanderbricks_semantic',
+    'fact_booking',
+    'stay_nights',
+    'Stay Duration',
+    'Calculated as DATEDIFF(check_out, check_in).',
+    'Bookings',
+    current_timestamp()
+),
+
+(
+    'wanderbricks_semantic',
+    'fact_booking',
+    'total_amount',
+    'Booking Amount',
+    'Amount recorded on the booking. Must not automatically be interpreted as Revenue.',
+    'Finance',
+    current_timestamp()
+);
+
+INSERT INTO wanderbricks_govern.column_semantics
+(
+    schema_name,
+    table_name,
+    column_name,
+    business_name,
+    business_definition,
+    business_domain,
+    financial_flag,
+    created_at
+)
+VALUES
+
+(
+    'wanderbricks_semantic',
+    'fact_payment',
+    'payment_id',
+    'Payment Identifier',
+    'Identifier present in source data but not reliable as a unique payment key.',
+    'Finance',
+    true,
+    current_timestamp()
+),
+
+(
+    'wanderbricks_semantic',
+    'fact_payment',
+    'amount',
+    'Payment Amount',
+    'Signed monetary movement. Interpretation depends on status.',
+    'Finance',
+    true,
+    current_timestamp()
+),
+
+(
+    'wanderbricks_semantic',
+    'fact_payment',
+    'status',
+    'Payment Status',
+    'Observed statuses: completed, refunded and failed.',
+    'Finance',
+    true,
+    current_timestamp()
+);
+INSERT INTO wanderbricks_govern.column_semantics
+(
+    schema_name,
+    table_name,
+    column_name,
+    business_name,
+    business_definition,
+    business_domain,
+    sensitive_flag,
+    created_at
+)
+VALUES
+
+(
+    'wanderbricks_semantic',
+    'fact_review',
+    'review_id',
+    'Review Identifier',
+    'Not reliable as a unique review identifier.',
+    'Customer Experience',
+    false,
+    current_timestamp()
+),
+
+(
+    'wanderbricks_semantic',
+    'fact_review',
+    'rating',
+    'Review Rating',
+    'Rating value between 1.0 and 5.0. KPI policy must define handling of null ratings.',
+    'Customer Experience',
+    false,
+    current_timestamp()
+),
+
+(
+    'wanderbricks_semantic',
+    'fact_review',
+    'is_deleted',
+    'Deleted Review Flag',
+    'Source deletion indicator. KPI definitions must explicitly decide how to handle deleted reviews.',
+    'Customer Experience',
+    false,
+    current_timestamp()
+),
+
+(
+    'wanderbricks_semantic',
+    'fact_review',
+    'comment',
+    'Review Comment',
+    'Customer-generated free text.',
+    'Customer Experience',
+    true,
+    current_timestamp()
+);
+INSERT INTO wanderbricks_govern.column_semantics
+(
+    schema_name,
+    table_name,
+    column_name,
+    business_name,
+    business_definition,
+    business_domain,
+    created_at
+)
+VALUES
+
+(
+    'wanderbricks_semantic',
+    'fact_page_view',
+    'view_id',
+    'Page View Identifier',
+    'Source identifier not reliable as a unique event key.',
+    'Digital Engagement',
+    current_timestamp()
+),
+
+(
+    'wanderbricks_semantic',
+    'fact_page_view',
+    'event_timestamp',
+    'Page View Timestamp',
+    'Timestamp of the property-page interaction.',
+    'Digital Engagement',
+    current_timestamp()
+);
+INSERT INTO wanderbricks_govern.column_semantics
+(
+    schema_name,
+    table_name,
+    column_name,
+    business_name,
+    business_definition,
+    business_domain,
+    created_at
+)
+VALUES
+
+(
+    'wanderbricks_semantic',
+    'fact_clickstream',
+    'event',
+    'Clickstream Event Type',
+    'Observed event types include view, click, search and filter.',
+    'Digital Engagement',
+    current_timestamp()
+),
+
+(
+    'wanderbricks_semantic',
+    'fact_clickstream',
+    'event_timestamp',
+    'Clickstream Timestamp',
+    'Timestamp of the website interaction.',
+    'Digital Engagement',
+    current_timestamp()
+);
+INSERT INTO wanderbricks_govern.column_semantics
+(
+    schema_name,
+    table_name,
+    column_name,
+    business_name,
+    business_definition,
+    business_domain,
+    sensitive_flag,
+    created_at
+)
+VALUES
+
+(
+    'wanderbricks_semantic',
+    'fact_support_ticket',
+    'ticket_id',
+    'Support Ticket Identifier',
+    'Reliable support ticket identifier.',
+    'Customer Support',
+    false,
+    current_timestamp()
+),
+
+(
+    'wanderbricks_semantic',
+    'fact_support_ticket',
+    'messages',
+    'Support Conversation',
+    'Customer support message history.',
+    'Customer Support',
+    true,
+    current_timestamp()
+);
+INSERT INTO wanderbricks_govern.prompt_context
+(
+    context_type,
+    object_name,
+    prompt_text,
+    active,
+    created_at
+)
+VALUES
+
+-- ============================================================
+-- GENERAL
+-- ============================================================
+
+(
+    'GENERAL',
+    'SemanticAuthority',
+    'Use certified metrics and business definitions as the authoritative source of business meaning.',
+    true,
+    current_timestamp()
+),
+
+(
+    'GENERAL',
+    'NoMetricInvention',
+    'Never invent metrics that are not documented in the governance layer.',
+    true,
+    current_timestamp()
+),
+
+(
+    'GENERAL',
+    'GrainPreservation',
+    'Always identify the grain of the source data before aggregation.',
+    true,
+    current_timestamp()
+),
+
+(
+    'GENERAL',
+    'BusinessRules',
+    'Business rules override inferred interpretations.',
+    true,
+    current_timestamp()
+),
+
+(
+    'GENERAL',
+    'SemanticContract',
+    'The semantic contract is the authoritative source for data model interpretation, KPI certification status and business definitions.',
+    true,
+    current_timestamp()
+),
+
+(
+    'GENERAL',
+    'CertifiedMetricsPreference',
+    'Prefer certified metrics whenever they exist.',
+    true,
+    current_timestamp()
+),
+
+-- ============================================================
+-- KPI & METRIC CONTEXT
+-- ============================================================
+
+(
+    'METRIC',
+    'Revenue',
+    'Revenue is not currently certified. Do not assume Revenue equals booking amount, payment amount or net payment movement.',
+    true,
+    current_timestamp()
+),
+
+(
+    'METRIC',
+    'AverageRating',
+    'Average Rating requires an explicit policy for deleted reviews and null ratings.',
+    true,
+    current_timestamp()
+),
+
+(
+    'METRIC',
+    'ReviewCount',
+    'Review Count must be calculated using row grain. Do not use COUNT(DISTINCT review_id).',
+    true,
+    current_timestamp()
+),
+
+(
+    'METRIC',
+    'ConversionRate',
+    'Conversion Rate requires attribution and funnel definitions before certification.',
+    true,
+    current_timestamp()
+),
+
+(
+    'METRIC',
+    'CancellationRate',
+    'Cancellation Rate requires an explicit denominator definition.',
+    true,
+    current_timestamp()
+),
+
+(
+    'METRIC',
+    'CustomerLifetimeValue',
+    'Customer Lifetime Value requires lifecycle and revenue definitions before certification.',
+    true,
+    current_timestamp()
+),
+
+(
+    'METRIC',
+    'Occupancy',
+    'Occupancy is unsupported by the current dataset and must not be calculated.',
+    true,
+    current_timestamp()
+),
+
+-- ============================================================
+-- DATA QUALITY CONTEXT
+-- ============================================================
+
+(
+    'QUALITY',
+    'PaymentId',
+    'payment_id is not a reliable unique identifier and must not be used as a business key.',
+    true,
+    current_timestamp()
+),
+
+(
+    'QUALITY',
+    'ReviewId',
+    'review_id is not a reliable unique identifier and must not be used as a review count key.',
+    true,
+    current_timestamp()
+),
+
+(
+    'QUALITY',
+    'ViewId',
+    'view_id is not a reliable unique identifier and must not be used as a page view count key.',
+    true,
+    current_timestamp()
+),
+
+(
+    'QUALITY',
+    'BookingId',
+    'booking_id has been validated and can be treated as a reliable booking identifier.',
+    true,
+    current_timestamp()
+),
+
+(
+    'QUALITY',
+    'PropertyId',
+    'property_id has been validated and can be treated as a reliable property identifier.',
+    true,
+    current_timestamp()
+),
+
+-- ============================================================
+-- MODEL CONTEXT
+-- ============================================================
+
+(
+    'MODEL',
+    'Booking',
+    'fact_booking has one row per booking and booking_id is reliable.',
+    true,
+    current_timestamp()
+),
+
+(
+    'MODEL',
+    'BookingUpdate',
+    'fact_booking_update represents historical updates associated with bookings.',
+    true,
+    current_timestamp()
+),
+
+(
+    'MODEL',
+    'PaymentMovement',
+    'fact_payment represents monetary movements associated with bookings.',
+    true,
+    current_timestamp()
+),
+
+(
+    'MODEL',
+    'ReviewRecord',
+    'fact_review represents review records. review_id is not unique.',
+    true,
+    current_timestamp()
+),
+
+(
+    'MODEL',
+    'PageViewEvent',
+    'fact_page_view represents property-page interactions. view_id is not unique.',
+    true,
+    current_timestamp()
+),
+
+(
+    'MODEL',
+    'ClickstreamEvent',
+    'fact_clickstream represents website interaction events.',
+    true,
+    current_timestamp()
+),
+
+(
+    'MODEL',
+    'SupportTicket',
+    'fact_support_ticket represents one support ticket per row.',
+    true,
+    current_timestamp()
+),
+
+-- ============================================================
+-- SEMANTIC RULES
+-- ============================================================
+
+(
+    'RULE',
+    'BookingDate',
+    'Booking Date refers to bookings.created_at and not to check_in or check_out.',
+    true,
+    current_timestamp()
+),
+
+(
+    'RULE',
+    'TemporalConcepts',
+    'created_at, check_in and check_out represent different business concepts and must not be treated as interchangeable.',
+    true,
+    current_timestamp()
+),
+
+(
+    'RULE',
+    'IndependentEventSources',
+    'clickstream and page_views are independent event sources and must not be automatically merged.',
+    true,
+    current_timestamp()
+),
+
+(
+    'RULE',
+    'PaymentInterpretation',
+    'Completed Payment Volume, Refund Volume and Net Payment Movement are independent certified metrics and must not automatically be labelled Revenue.',
+    true,
+    current_timestamp()
+),
+
+(
+    'RULE',
+    'PrimaryKeyValidation',
+    'Declared primary keys must be validated against actual data before they are trusted semantically.',
+    true,
+    current_timestamp()
+),
+
+(
+    'RULE',
+    'NoAssumption',
+    'Do not infer business meaning from column names alone.',
+    true,
+    current_timestamp()
+),
+
+(
+    'RULE',
+    'PreserveGrain',
+    'Every KPI must preserve the grain of its source data before aggregation.',
+    true,
+    current_timestamp()
+);
+
+
+CREATE OR REPLACE VIEW wanderbricks_govern.ai_context AS
+
+SELECT
+    'BUSINESS_TERM' AS context_type,
+    term_name AS object_name,
+    business_definition AS context
+FROM wanderbricks_govern.business_terms
+
+UNION ALL
+
+SELECT
+    'METRIC',
+    metric_name,
+    business_definition
+FROM wanderbricks_govern.metrics
+
+UNION ALL
+
+SELECT
+    'RULE',
+    rule_name,
+    rule_description
+FROM wanderbricks_govern.business_rules
+
+UNION ALL
+
+SELECT
+    context_type,
+    object_name,
+    prompt_text
+FROM wanderbricks_govern.prompt_context;
+
+CREATE TABLE IF NOT EXISTS wanderbricks_govern.prompt_context (
+    context_type STRING NOT NULL,
+
+    object_name STRING NOT NULL,
+
+    prompt_text STRING,
+
+    active BOOLEAN,
+
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
+-- ============================================================
+-- METRIC VALIDATION
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS wanderbricks_govern.metric_validation (
+    metric_name STRING NOT NULL,
+
+    validation_status STRING,
+
+    validation_date TIMESTAMP,
+
+    validated_by STRING,
+
+    validation_notes STRING,
+
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
+
+-- ============================================================
+-- SEMANTIC EXAMPLES
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS wanderbricks_govern.semantic_examples (
+    example_name STRING NOT NULL,
+
+    business_question STRING,
+
+    sql_example STRING,
+
+    certification_status STRING,
+
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
+
+-- ============================================================
+-- INITIAL METRIC VALIDATION LOAD
+-- ============================================================
+
+INSERT INTO wanderbricks_govern.metric_validation
+(
+    metric_name,
+    validation_status,
+    validation_date,
+    validated_by,
+    validation_notes,
+    created_at
+)
+VALUES
+
+(
+    'Total Properties',
+    'VALIDATED',
+    current_timestamp(),
+    'Semantic Contract',
+    'Certified by semantic profiling.',
+    current_timestamp()
+),
+
+(
+    'Total Hosts',
+    'VALIDATED',
+    current_timestamp(),
+    'Semantic Contract',
+    'Certified by semantic profiling.',
+    current_timestamp()
+),
+
+(
+    'Total Bookings',
+    'VALIDATED',
+    current_timestamp(),
+    'Semantic Contract',
+    'Certified by semantic profiling.',
+    current_timestamp()
+),
+
+(
+    'Completed Bookings',
+    'VALIDATED',
+    current_timestamp(),
+    'Semantic Contract',
+    'Certified by semantic profiling.',
+    current_timestamp()
+),
+
+(
+    'Cancelled Bookings',
+    'VALIDATED',
+    current_timestamp(),
+    'Semantic Contract',
+    'Certified by semantic profiling.',
+    current_timestamp()
+),
+
+(
+    'Stay Duration',
+    'VALIDATED',
+    current_timestamp(),
+    'Semantic Contract',
+    'Certified by semantic profiling.',
+    current_timestamp()
+),
+
+(
+    'Average Stay Duration',
+    'VALIDATED',
+    current_timestamp(),
+    'Semantic Contract',
+    'Certified by semantic profiling.',
+    current_timestamp()
+),
+
+(
+    'Completed Payment Volume',
+    'VALIDATED',
+    current_timestamp(),
+    'Semantic Contract',
+    'Certified by semantic profiling.',
+    current_timestamp()
+),
+
+(
+    'Refund Volume',
+    'VALIDATED',
+    current_timestamp(),
+    'Semantic Contract',
+    'Certified by semantic profiling.',
+    current_timestamp()
+),
+
+(
+    'Net Payment Movement',
+    'VALIDATED',
+    current_timestamp(),
+    'Semantic Contract',
+    'Certified by semantic profiling.',
+    current_timestamp()
+),
+
+(
+    'Revenue',
+    'PENDING',
+    current_timestamp(),
+    'Semantic Contract',
+    'Requires explicit business definition.',
+    current_timestamp()
+),
+
+(
+    'Conversion Rate',
+    'PENDING',
+    current_timestamp(),
+    'Semantic Contract',
+    'Requires attribution and funnel definition.',
+    current_timestamp()
+),
+
+(
+    'Cancellation Rate',
+    'PENDING',
+    current_timestamp(),
+    'Semantic Contract',
+    'Requires denominator definition.',
+    current_timestamp()
+),
+
+(
+    'Customer Lifetime Value',
+    'PENDING',
+    current_timestamp(),
+    'Semantic Contract',
+    'Requires lifecycle and revenue definitions.',
+    current_timestamp()
+),
+
+(
+    'Occupancy',
+    'REJECTED',
+    current_timestamp(),
+    'Semantic Contract',
+    'Dataset does not provide inventory basis required.',
+    current_timestamp()
+);
+
+-- ============================================================
+-- INITIAL SEMANTIC EXAMPLES
+-- ============================================================
+
+INSERT INTO wanderbricks_govern.semantic_examples
+(
+    example_name,
+    business_question,
+    sql_example,
+    certification_status,
+    created_at
+)
+VALUES
+
+(
+    'Total Properties',
+    'How many properties exist in the platform?',
+    'SELECT COUNT(DISTINCT property_id) FROM workspace.wanderbricks_semantic.dim_property',
+    'CERTIFIED',
+    current_timestamp()
+),
+
+(
+    'Properties Per Destination',
+    'How many properties exist per destination?',
+    'SELECT destination_id, COUNT(*) FROM workspace.wanderbricks_semantic.dim_property GROUP BY destination_id',
+    'CERTIFIED',
+    current_timestamp()
+),
+
+(
+    'Total Bookings',
+    'How many bookings exist?',
+    'SELECT COUNT(DISTINCT booking_id) FROM workspace.wanderbricks_semantic.fact_booking',
+    'CERTIFIED',
+    current_timestamp()
+),
+
+(
+    'Completed Bookings',
+    'How many completed bookings exist?',
+    'SELECT COUNT(DISTINCT booking_id) FROM workspace.wanderbricks_semantic.fact_booking WHERE status = ''completed''',
+    'CERTIFIED',
+    current_timestamp()
+),
+
+(
+    'Cancelled Bookings',
+    'How many cancelled bookings exist?',
+    'SELECT COUNT(DISTINCT booking_id) FROM workspace.wanderbricks_semantic.fact_booking WHERE status = ''cancelled''',
+    'CERTIFIED',
+    current_timestamp()
+),
+
+(
+    'Average Stay Duration',
+    'What is the average stay duration?',
+    'SELECT AVG(stay_nights) FROM workspace.wanderbricks_semantic.fact_booking',
+    'CERTIFIED',
+    current_timestamp()
+),
+
+(
+    'Completed Payment Volume',
+    'What is the total completed payment volume?',
+    'SELECT SUM(amount) FROM workspace.wanderbricks_semantic.fact_payment WHERE status = ''completed''',
+    'CERTIFIED',
+    current_timestamp()
+),
+
+(
+    'Refund Volume',
+    'What is the refund volume?',
+    'SELECT SUM(ABS(amount)) FROM workspace.wanderbricks_semantic.fact_payment WHERE status = ''refunded''',
+    'CERTIFIED',
+    current_timestamp()
+),
+
+(
+    'Net Payment Movement',
+    'What is the net payment movement?',
+    'SELECT SUM(amount) FROM workspace.wanderbricks_semantic.fact_payment',
+    'CERTIFIED',
+    current_timestamp()
+),
+
+(
+    'Revenue',
+    'What is Revenue?',
+    'Revenue is not certified and requires an explicit business definition.',
+    'CONDITIONAL',
+    current_timestamp()
+);
+
+-- ============================================================
+-- SEMANTIC REGISTRY
+-- ============================================================
+
+CREATE OR REPLACE VIEW wanderbricks_govern.semantic_registry AS
+
+SELECT
+    'ENTITY' AS object_type,
+    entity_name AS object_name,
+    description,
+    business_domain,
+    owner
+FROM wanderbricks_govern.entities
+
+UNION ALL
+
+SELECT
+    'BUSINESS_TERM',
+    term_name,
+    business_definition,
+    business_domain,
+    business_owner
+FROM wanderbricks_govern.business_terms
+
+UNION ALL
+
+SELECT
+    'METRIC',
+    metric_name,
+    business_definition,
+    business_domain,
+    business_owner
+FROM wanderbricks_govern.metrics
+
+UNION ALL
+
+SELECT
+    'KPI',
+    kpi_name,
+    business_definition,
+    business_domain,
+    NULL
+FROM wanderbricks_govern.kpi_catalog
+
+UNION ALL
+
+SELECT
+    'RULE',
+    rule_name,
+    rule_description,
+    business_domain,
+    NULL
+FROM wanderbricks_govern.business_rules;
+
+-- ============================================================
+-- AI CONTEXT VIEW
+-- ============================================================
+
+CREATE OR REPLACE VIEW wanderbricks_govern.ai_context AS
+
+SELECT
+    context_type,
+    object_name,
+    prompt_text AS context
+FROM wanderbricks_govern.prompt_context
+
+UNION ALL
+
+SELECT
+    'BUSINESS_TERM',
+    term_name,
+    business_definition
+FROM wanderbricks_govern.business_terms
+
+UNION ALL
+
+SELECT
+    'METRIC',
+    metric_name,
+    business_definition
+FROM wanderbricks_govern.metrics
+
+UNION ALL
+
+SELECT
+    'RULE',
+    rule_name,
+    rule_description
+FROM wanderbricks_govern.business_rules;
